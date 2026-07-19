@@ -17,7 +17,7 @@ Dragging does not start from Mermaid nodes that are links. A click and a drag ar
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
 3. Run `npm ci && npm run build` to generate `dist/`.
-4. Click Load unpacked and select this directory.
+4. Click Load unpacked and select the `dist/` directory.
 5. Reload a GitHub page that contains a Mermaid diagram.
 
 ## Scope and Permissions
