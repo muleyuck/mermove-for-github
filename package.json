@@ -6,9 +6,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "node esbuild.config.ts",
-    "test": "node --test"
+    "test": "node --test",
+    "test:compatibility": "npm run build && playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^26.1.1",
     "esbuild": "^0.28.1",
     "typescript": "^7.0.2"
