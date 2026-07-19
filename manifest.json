@@ -11,8 +11,7 @@
       "all_frames": true,
       "run_at": "document_idle",
       "js": [
-        "src/pan-zoom.js",
-        "src/content-script.js"
+        "dist/content-script.js"
       ]
     }
   ]
