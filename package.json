@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --test --experimental-test-coverage --test-coverage-lines=95 --test-coverage-branches=82 --test-coverage-functions=100"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

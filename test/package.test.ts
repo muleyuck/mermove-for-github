@@ -13,7 +13,10 @@ const packageJson = existsSync(packagePath)
 test("npm test runs the Node test suite with no runtime dependencies", () => {
   assert.equal(packageJson.name, "mermove-for-github");
   assert.equal(packageJson.private, true);
-  assert.equal(packageJson.scripts?.test, "node --test");
+  assert.equal(
+    packageJson.scripts?.test,
+    "node --test --experimental-test-coverage --test-coverage-lines=95 --test-coverage-branches=82 --test-coverage-functions=100",
+  );
   assert.equal(packageJson.dependencies, undefined);
   assert.deepEqual(
     Object.keys(packageJson.devDependencies ?? {}).sort(),
