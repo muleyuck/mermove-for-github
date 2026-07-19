@@ -20,11 +20,11 @@ node --test test/pan-zoom.test.ts     # run a single test file
 
 - **`manifest.json`** declares a single content script pair injected into `https://viewscreen.githubusercontent.com/markdown/mermaid*` (`all_frames: true`). This is GitHub's dedicated Mermaid renderer iframe, not `github.com` itself — GitHub embeds Mermaid diagrams there rather than rendering them inline.
 - **`src/pan-zoom.ts`** is generic, DOM-agnostic pan/zoom logic with no knowledge of GitHub or Mermaid. `attachPanZoom(viewport, target)` wires pointer/wheel listeners onto a given viewport element and applies `transform: translate(...) scale(...)` to a target element, returning `{ reset, destroy }`. Dragging is distinguished from clicking via a 4px movement threshold before drag events fire; drag doesn't start from links/buttons/inputs/`[role='link']`.
-- **`src/content-script.ts`** contains all GitHub/Mermaid-specific detection logic, isolated from the pan/zoom mechanics:
+- **`src/renderer.ts`** contains all GitHub/Mermaid-specific detection logic, isolated from the pan/zoom mechanics:
   - `findDiagramSvg(root)` picks the diagram: the largest-`viewBox` `<svg>` outside any `<button>` (largest area wins to reject small control icons).
   - `observeRenderer(root, MutationObserverClass, attachPanZoom)` uses a `MutationObserver` on `documentElement` to re-bind pan/zoom whenever GitHub replaces/re-renders the SVG (deferred rendering, live re-render), destroying the previous controller each time. It also listens for clicks on GitHub's own `button[aria-label='Reset view']` and forwards them to the controller's `reset()`.
-  - Both files are plain ESM (`export`/`import`). `content-script.ts` imports `attachPanZoom` from `pan-zoom.ts` and wires it to `document`/`MutationObserver` at module load time, guarded by `typeof document !== "undefined"` so importing the module under Node (in tests) doesn't throw.
-- Because GitHub's DOM/CSS is not depended on (no class names or Mermaid SVG IDs), if GitHub changes its renderer's URL/host, update `matches` in `manifest.json`; if it changes the renderer's HTML structure, the fix should stay confined to `src/content-script.ts`.
+  - All source files are plain ESM (`export`/`import`). `content-script.ts` imports `attachPanZoom` from `pan-zoom.ts` and `startRendererEnhancement` from `renderer.ts`, then wires them to `document`/`MutationObserver` at module load time.
+- Because GitHub's DOM/CSS is not depended on (no class names or Mermaid SVG IDs), if GitHub changes its renderer's URL/host, update `matches` in `manifest.json`; if it changes the renderer's HTML structure, the fix should stay confined to `src/renderer.ts`.
 - `dist/content-script.js` is the esbuild-bundled output that `manifest.json` actually loads; it's gitignored and rebuilt via `npm run build`.
 
 ## Testing conventions
