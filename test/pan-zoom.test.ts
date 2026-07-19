@@ -67,6 +67,38 @@ test("Ctrl+wheel zooms around the pointer without scrolling the page", (t) => {
   assert.equal(event.defaultPrevented, true);
 });
 
+test("wheel without a zoom modifier leaves page scrolling unchanged", (t) => {
+  const { viewport, target } = setup(t);
+  const event = createEvent("wheel", {
+    clientX: 60,
+    clientY: 100,
+    ctrlKey: false,
+    metaKey: false,
+    deltaY: -100,
+  });
+
+  viewport.dispatchEvent(event);
+
+  assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
+  assert.equal(event.defaultPrevented, false);
+});
+
+test("zero-delta wheel leaves the diagram and page scrolling unchanged", (t) => {
+  const { viewport, target } = setup(t);
+  const event = createEvent("wheel", {
+    clientX: 60,
+    clientY: 100,
+    ctrlKey: true,
+    metaKey: false,
+    deltaY: 0,
+  });
+
+  viewport.dispatchEvent(event);
+
+  assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
+  assert.equal(event.defaultPrevented, false);
+});
+
 test("dragging starts outside interactive Mermaid nodes only", (t) => {
   const { viewport, target } = setup(t);
   viewport.interactive = true;
@@ -108,8 +140,12 @@ test("small pointer movement remains a click instead of panning", (t) => {
   assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
 });
 
-test("a completed drag does not activate a Mermaid node click", (t) => {
+test("a completed drag does not activate a Mermaid node", (t) => {
   const { viewport } = setup(t);
+  let activationCount = 0;
+  viewport.addEventListener("click", () => {
+    activationCount += 1;
+  });
 
   viewport.dispatchEvent(
     createEvent("pointerdown", { button: 0, pointerId: 11, clientX: 20, clientY: 30 }),
@@ -121,7 +157,7 @@ test("a completed drag does not activate a Mermaid node click", (t) => {
   const click = createEvent("click", {});
   viewport.dispatchEvent(click);
 
-  assert.equal(click.defaultPrevented, true);
+  assert.equal(activationCount, 0);
 });
 
 test("reset restores the initial transform", (t) => {
