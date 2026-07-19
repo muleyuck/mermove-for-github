@@ -1,0 +1,12 @@
+name: GitHub compatibility schedule
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility:
+    uses: ./.github/workflows/github-compatibility.yml
