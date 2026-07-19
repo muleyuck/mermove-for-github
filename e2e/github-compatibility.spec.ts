@@ -68,6 +68,10 @@ test("the extension controls GitHub's live Mermaid renderer", async ({
     .poll(() => target.evaluate((element) => element.style.transform))
     .toBe("translate(0px, 0px) scale(1)");
 
+  await diagram.evaluate((element) =>
+    element.scrollIntoView({ block: "center" }),
+  );
+
   const bounds = await diagram.boundingBox();
   assertBounds(bounds);
   const pointer = {
