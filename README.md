@@ -1,6 +1,8 @@
 # Mermove for GitHub
 
-This Chrome extension adds mouse controls to Mermaid diagrams rendered on GitHub.
+Mermove for GitHub is a Chrome extension for panning and zooming Mermaid diagrams rendered on GitHub.
+
+It is useful when a large flowchart, sequence diagram, or other Mermaid diagram does not fit comfortably in GitHub's viewer and you need to inspect its details without leaving the page.
 
 ## Controls
 
@@ -10,7 +12,7 @@ This Chrome extension adds mouse controls to Mermaid diagrams rendered on GitHub
 
 Dragging does not start from Mermaid nodes that are links. A click and a drag are distinguished by a 4-pixel movement threshold.
 
-## Loading in Chrome
+## Install
 
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
@@ -18,24 +20,6 @@ Dragging does not start from Mermaid nodes that are links. A click and a drag ar
 4. Click Load unpacked and select this directory.
 5. Reload a GitHub page that contains a Mermaid diagram.
 
-## Handling GitHub DOM Changes
+## Scope and Permissions
 
-GitHub-specific detection logic is isolated in [`src/renderer.ts`](src/renderer.ts), while [`src/content-script.ts`](src/content-script.ts) is only the browser entry point.
-
-- Target only the dedicated Mermaid renderer at `viewscreen.githubusercontent.com/markdown/mermaid`, not `github.com`.
-- Do not depend on GitHub CSS classes or Mermaid SVG IDs.
-- Detect the SVG outside a button with the largest `viewBox` in the renderer as the diagram.
-- Use `MutationObserver` to track deferred rendering, re-rendering, and SVG replacement or removal.
-- Keep pan and zoom logic separate in [`src/pan-zoom.ts`](src/pan-zoom.ts).
-
-If the renderer host or URL changes, the main update should be to `matches` in [`manifest.json`](manifest.json). If the renderer's HTML structure changes, the main update should be limited to `src/renderer.ts`.
-
-## Tests
-
-This project has no runtime dependencies. Type checking, bundling, and testing all use devDependencies only (`typescript`, `esbuild`) plus Node.js's built-in test runner.
-
-```sh
-npm run typecheck
-npm run build
-npm test
-```
+The extension runs only in GitHub's dedicated Mermaid renderer at `viewscreen.githubusercontent.com/markdown/mermaid`. It does not run directly on `github.com` pages and does not request additional browser permissions.
