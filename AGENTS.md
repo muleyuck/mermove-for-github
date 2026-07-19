@@ -10,7 +10,7 @@
 ```sh
 npm run typecheck                     # type-check with tsc (no emit)
 npm run build                         # bundle src/content-script.ts (and its pan-zoom.ts import) into dist/content-script.js with esbuild
-npm test                              # run the full suite (node --test), coverage-gated
+npm test                              # run the full suite (node --test)
 node --test test/pan-zoom.test.ts     # run a single test file
 ```
 
