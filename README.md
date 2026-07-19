@@ -14,25 +14,28 @@ Dragging does not start from Mermaid nodes that are links. A click and a drag ar
 
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
-3. Click Load unpacked and select this directory.
-4. Reload a GitHub page that contains a Mermaid diagram.
+3. Run `npm ci && npm run build` to generate `dist/`.
+4. Click Load unpacked and select this directory.
+5. Reload a GitHub page that contains a Mermaid diagram.
 
 ## Handling GitHub DOM Changes
 
-GitHub-specific detection logic is isolated in [`src/content-script.js`](src/content-script.js).
+GitHub-specific detection logic is isolated in [`src/content-script.ts`](src/content-script.ts).
 
 - Target only the dedicated Mermaid renderer at `viewscreen.githubusercontent.com/markdown/mermaid`, not `github.com`.
 - Do not depend on GitHub CSS classes or Mermaid SVG IDs.
 - Detect the SVG outside a button with the largest `viewBox` in the renderer as the diagram.
 - Use `MutationObserver` to track deferred rendering, re-rendering, and SVG replacement or removal.
-- Keep pan and zoom logic separate in [`src/pan-zoom.js`](src/pan-zoom.js).
+- Keep pan and zoom logic separate in [`src/pan-zoom.ts`](src/pan-zoom.ts).
 
-If the renderer host or URL changes, the main update should be to `matches` in [`manifest.json`](manifest.json). If the renderer's HTML structure changes, the main update should be limited to `src/content-script.js`.
+If the renderer host or URL changes, the main update should be to `matches` in [`manifest.json`](manifest.json). If the renderer's HTML structure changes, the main update should be limited to `src/content-script.ts`.
 
 ## Tests
 
-This project has no external packages. Run the tests with Node.js's built-in test runner.
+This project has no runtime dependencies. Type checking, bundling, and testing all use devDependencies only (`typescript`, `esbuild`) plus Node.js's built-in test runner.
 
 ```sh
+npm run typecheck
+npm run build
 npm test
 ```
