@@ -31,6 +31,32 @@ function createSvg(
   };
 }
 
+function createTestMutationObserver(): {
+  Observer: new (callback: () => void) => MutationObserverLike;
+  notify: () => void;
+  disconnected: boolean;
+} {
+  let notifyCallback: (() => void) | undefined;
+  const state = { disconnected: false };
+  class Observer implements MutationObserverLike {
+    constructor(callback: () => void) {
+      notifyCallback = callback;
+    }
+    observe(): void {}
+    disconnect(): void {
+      state.disconnected = true;
+    }
+  }
+
+  return {
+    Observer,
+    notify: () => notifyCallback?.(),
+    get disconnected() {
+      return state.disconnected;
+    },
+  };
+}
+
 test("findDiagramSvg selects the largest non-control SVG", () => {
   const controlIcon = createSvg(500, 500, { insideButton: true });
   const decorativeIcon = createSvg(16, 16);
@@ -50,8 +76,6 @@ test("observeRenderer rebinds when GitHub replaces the rendered SVG", () => {
   const first = createSvg(120, 80);
   const second = createSvg(200, 100);
   let current = first;
-  let notifyMutation: (() => void) | undefined;
-  let observerDisconnected = false;
   const destroyedTargets: FakeParent[] = [];
   const attachedTargets: { viewport: FakeParent; target: FakeParent }[] = [];
   const root: RendererRoot<FakeParent> = {
@@ -60,15 +84,7 @@ test("observeRenderer rebinds when GitHub replaces the rendered SVG", () => {
       return [current];
     },
   };
-  class TestMutationObserver implements MutationObserverLike {
-    constructor(callback: () => void) {
-      notifyMutation = callback;
-    }
-    observe(): void {}
-    disconnect(): void {
-      observerDisconnected = true;
-    }
-  }
+  const observer = createTestMutationObserver();
   function attachPanZoom(viewport: FakeParent, target: FakeParent) {
     attachedTargets.push({ viewport, target });
     return {
@@ -79,9 +95,9 @@ test("observeRenderer rebinds when GitHub replaces the rendered SVG", () => {
     };
   }
 
-  const stop = observeRenderer(root, TestMutationObserver, attachPanZoom);
+  const stop = observeRenderer(root, observer.Observer, attachPanZoom);
   current = second;
-  notifyMutation?.();
+  observer.notify();
   stop();
 
   assert.deepEqual(attachedTargets, [
@@ -89,12 +105,11 @@ test("observeRenderer rebinds when GitHub replaces the rendered SVG", () => {
     { viewport: second.parentElement, target: second.parentElement },
   ]);
   assert.deepEqual(destroyedTargets, [first.parentElement, second.parentElement]);
-  assert.equal(observerDisconnected, true);
+  assert.equal(observer.disconnected, true);
 });
 
 test("observeRenderer ignores unrelated mutations while the SVG is unchanged", () => {
   const diagram = createSvg(120, 80);
-  let notifyMutation: (() => void) | undefined;
   let attachmentCount = 0;
   const root: RendererRoot<FakeParent> = {
     documentElement: {},
@@ -102,20 +117,14 @@ test("observeRenderer ignores unrelated mutations while the SVG is unchanged", (
       return [diagram];
     },
   };
-  class TestMutationObserver implements MutationObserverLike {
-    constructor(callback: () => void) {
-      notifyMutation = callback;
-    }
-    observe(): void {}
-    disconnect(): void {}
-  }
+  const observer = createTestMutationObserver();
 
-  const stop = observeRenderer(root, TestMutationObserver, () => {
+  const stop = observeRenderer(root, observer.Observer, () => {
     attachmentCount += 1;
     return { reset() {}, destroy() {} };
   });
-  notifyMutation?.();
-  notifyMutation?.();
+  observer.notify();
+  observer.notify();
   stop();
 
   assert.equal(attachmentCount, 1);
@@ -124,7 +133,6 @@ test("observeRenderer ignores unrelated mutations while the SVG is unchanged", (
 test("observeRenderer detaches when the rendered SVG is removed", () => {
   const diagram = createSvg(120, 80);
   let current: DiagramElement<FakeParent> | null = diagram;
-  let notifyMutation: (() => void) | undefined;
   let destroyCount = 0;
   const root: RendererRoot<FakeParent> = {
     documentElement: {},
@@ -132,22 +140,16 @@ test("observeRenderer detaches when the rendered SVG is removed", () => {
       return current ? [current] : [];
     },
   };
-  class TestMutationObserver implements MutationObserverLike {
-    constructor(callback: () => void) {
-      notifyMutation = callback;
-    }
-    observe(): void {}
-    disconnect(): void {}
-  }
+  const observer = createTestMutationObserver();
 
-  const stop = observeRenderer(root, TestMutationObserver, () => ({
+  const stop = observeRenderer(root, observer.Observer, () => ({
     reset() {},
     destroy() {
       destroyCount += 1;
     },
   }));
   current = null;
-  notifyMutation?.();
+  observer.notify();
 
   assert.equal(destroyCount, 1);
   stop();
@@ -170,13 +172,9 @@ test("GitHub's accessible reset control also resets mouse transforms", () => {
       return [diagram];
     }
   }
-  class TestMutationObserver implements MutationObserverLike {
-    observe(): void {}
-    disconnect(): void {}
-  }
   const root = new RendererRootFake();
 
-  const stop = observeRenderer(root, TestMutationObserver, () => ({
+  const stop = observeRenderer(root, createTestMutationObserver().Observer, () => ({
     destroy() {},
     reset() {
       resetCount += 1;
@@ -197,13 +195,8 @@ test("startRendererEnhancement wires the renderer document to pan and zoom", () 
       return [diagram];
     },
   };
-  class TestMutationObserver implements MutationObserverLike {
-    observe(): void {}
-    disconnect(): void {}
-  }
-
   const stop = startRendererEnhancement(root, {
-    MutationObserverClass: TestMutationObserver,
+    MutationObserverClass: createTestMutationObserver().Observer,
     attachPanZoom() {
       attachmentCount += 1;
       return { reset() {}, destroy() {} };
@@ -225,14 +218,9 @@ test("observeRenderer keeps pointer coordinates in an untransformed parent viewp
       return [diagram];
     },
   };
-  class TestMutationObserver implements MutationObserverLike {
-    observe(): void {}
-    disconnect(): void {}
-  }
-
   const stop = observeRenderer(
     root,
-    TestMutationObserver,
+    createTestMutationObserver().Observer,
     (viewport, target) => {
       attachment = { viewport, target };
       return { reset() {}, destroy() {} };
