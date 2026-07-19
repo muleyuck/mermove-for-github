@@ -1,4 +1,5 @@
 import { build } from "esbuild";
+import { copyFile } from "node:fs/promises";
 
 await build({
   entryPoints: ["src/content-script.ts"],
@@ -9,3 +10,5 @@ await build({
   platform: "browser",
   sourcemap: false,
 });
+
+await copyFile("manifest.json", "dist/manifest.json");
