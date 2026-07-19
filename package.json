@@ -2,8 +2,10 @@
   "name": "mermove-for-github",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "build": "node esbuild.config.mjs",
     "test": "node --test --experimental-test-coverage --test-coverage-lines=95 --test-coverage-branches=82 --test-coverage-functions=100"
   },
   "devDependencies": {
