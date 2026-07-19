@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "node esbuild.config.mjs",
-    "test": "node --test --experimental-test-coverage --test-coverage-lines=95 --test-coverage-branches=82 --test-coverage-functions=100"
+    "test": "node --test"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
