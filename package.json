@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "node esbuild.config.mjs",
+    "build": "node esbuild.config.ts",
     "test": "node --test"
   },
   "devDependencies": {
