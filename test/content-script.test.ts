@@ -7,7 +7,7 @@ import {
   type DiagramElement,
   type MutationObserverLike,
   type RendererRoot,
-} from "../src/content-script.ts";
+} from "../src/renderer.ts";
 
 interface FakeParent {
   parentElement?: FakeParent | null;

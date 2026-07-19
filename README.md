@@ -20,7 +20,7 @@ Dragging does not start from Mermaid nodes that are links. A click and a drag ar
 
 ## Handling GitHub DOM Changes
 
-GitHub-specific detection logic is isolated in [`src/content-script.ts`](src/content-script.ts).
+GitHub-specific detection logic is isolated in [`src/renderer.ts`](src/renderer.ts), while [`src/content-script.ts`](src/content-script.ts) is only the browser entry point.
 
 - Target only the dedicated Mermaid renderer at `viewscreen.githubusercontent.com/markdown/mermaid`, not `github.com`.
 - Do not depend on GitHub CSS classes or Mermaid SVG IDs.
@@ -28,7 +28,7 @@ GitHub-specific detection logic is isolated in [`src/content-script.ts`](src/con
 - Use `MutationObserver` to track deferred rendering, re-rendering, and SVG replacement or removal.
 - Keep pan and zoom logic separate in [`src/pan-zoom.ts`](src/pan-zoom.ts).
 
-If the renderer host or URL changes, the main update should be to `matches` in [`manifest.json`](manifest.json). If the renderer's HTML structure changes, the main update should be limited to `src/content-script.ts`.
+If the renderer host or URL changes, the main update should be to `matches` in [`manifest.json`](manifest.json). If the renderer's HTML structure changes, the main update should be limited to `src/renderer.ts`.
 
 ## Tests
 
