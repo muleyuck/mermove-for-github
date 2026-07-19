@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 import {
   attachPanZoom,
   zoomAt,
@@ -31,6 +31,15 @@ function createEvent(type: string, properties: Record<string, unknown>): Event {
   return event;
 }
 
+function setup(t: TestContext) {
+  const viewport = new TestElement();
+  const target = new TestElement();
+  const controller = attachPanZoom(viewport, target);
+  t.after(() => controller.destroy());
+
+  return { viewport, target, controller };
+}
+
 test("zoomAt keeps the pointer position anchored while scaling", () => {
   const result = zoomAt(
     { x: 10, y: 20, scale: 1 },
@@ -42,10 +51,8 @@ test("zoomAt keeps the pointer position anchored while scaling", () => {
   assert.deepEqual(result, { x: -30, y: -40, scale: 2 });
 });
 
-test("Ctrl+wheel zooms around the pointer without scrolling the page", () => {
-  const viewport = new TestElement();
-  const target = new TestElement();
-  const controller = attachPanZoom(viewport, target);
+test("Ctrl+wheel zooms around the pointer without scrolling the page", (t) => {
+  const { viewport, target } = setup(t);
   const event = createEvent("wheel", {
     clientX: 60,
     clientY: 100,
@@ -58,13 +65,10 @@ test("Ctrl+wheel zooms around the pointer without scrolling the page", () => {
 
   assert.equal(target.style.transform, "translate(-5px, -8px) scale(1.1)");
   assert.equal(event.defaultPrevented, true);
-  controller.destroy();
 });
 
-test("dragging starts outside interactive Mermaid nodes only", () => {
-  const viewport = new TestElement();
-  const target = new TestElement();
-  const controller = attachPanZoom(viewport, target);
+test("dragging starts outside interactive Mermaid nodes only", (t) => {
+  const { viewport, target } = setup(t);
   viewport.interactive = true;
 
   viewport.dispatchEvent(
@@ -75,13 +79,10 @@ test("dragging starts outside interactive Mermaid nodes only", () => {
   );
 
   assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
-  controller.destroy();
 });
 
-test("left-button drag pans the rendered diagram", () => {
-  const viewport = new TestElement();
-  const target = new TestElement();
-  const controller = attachPanZoom(viewport, target);
+test("left-button drag pans the rendered diagram", (t) => {
+  const { viewport, target } = setup(t);
 
   viewport.dispatchEvent(
     createEvent("pointerdown", { button: 0, pointerId: 7, clientX: 20, clientY: 30 }),
@@ -92,13 +93,10 @@ test("left-button drag pans the rendered diagram", () => {
 
   assert.equal(target.style.transform, "translate(12px, 17px) scale(1)");
   assert.equal(move.defaultPrevented, true);
-  controller.destroy();
 });
 
-test("small pointer movement remains a click instead of panning", () => {
-  const viewport = new TestElement();
-  const target = new TestElement();
-  const controller = attachPanZoom(viewport, target);
+test("small pointer movement remains a click instead of panning", (t) => {
+  const { viewport, target } = setup(t);
 
   viewport.dispatchEvent(
     createEvent("pointerdown", { button: 0, pointerId: 9, clientX: 20, clientY: 30 }),
@@ -108,13 +106,10 @@ test("small pointer movement remains a click instead of panning", () => {
   );
 
   assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
-  controller.destroy();
 });
 
-test("a completed drag does not activate a Mermaid node click", () => {
-  const viewport = new TestElement();
-  const target = new TestElement();
-  const controller = attachPanZoom(viewport, target);
+test("a completed drag does not activate a Mermaid node click", (t) => {
+  const { viewport } = setup(t);
 
   viewport.dispatchEvent(
     createEvent("pointerdown", { button: 0, pointerId: 11, clientX: 20, clientY: 30 }),
@@ -127,13 +122,10 @@ test("a completed drag does not activate a Mermaid node click", () => {
   viewport.dispatchEvent(click);
 
   assert.equal(click.defaultPrevented, true);
-  controller.destroy();
 });
 
-test("reset restores the initial transform", () => {
-  const viewport = new TestElement();
-  const target = new TestElement();
-  const controller = attachPanZoom(viewport, target);
+test("reset restores the initial transform", (t) => {
+  const { viewport, target, controller } = setup(t);
   viewport.dispatchEvent(
     createEvent("wheel", {
       clientX: 60,
@@ -147,5 +139,4 @@ test("reset restores the initial transform", () => {
   controller.reset();
 
   assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
-  controller.destroy();
 });

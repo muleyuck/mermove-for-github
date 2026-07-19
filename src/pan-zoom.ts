@@ -45,6 +45,10 @@ function formatNumber(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
 
+const ZOOM_LIMITS: ScaleLimits = { min: 0.5, max: 8 };
+const WHEEL_ZOOM_FACTOR = 1.1;
+const DRAG_START_THRESHOLD_PX = 4;
+
 export function attachPanZoom(
   viewport: PannableViewport,
   target: PannableTarget,
@@ -77,8 +81,10 @@ export function attachPanZoom(
       y: wheelEvent.clientY - bounds.top,
     };
     const requestedScale =
-      wheelEvent.deltaY < 0 ? state.scale * 1.1 : state.scale / 1.1;
-    state = zoomAt(state, point, requestedScale, { min: 0.5, max: 8 });
+      wheelEvent.deltaY < 0
+        ? state.scale * WHEEL_ZOOM_FACTOR
+        : state.scale / WHEEL_ZOOM_FACTOR;
+    state = zoomAt(state, point, requestedScale, ZOOM_LIMITS);
     render();
   }
 
@@ -110,7 +116,7 @@ export function attachPanZoom(
 
     const deltaX = pointerEvent.clientX - drag.clientX;
     const deltaY = pointerEvent.clientY - drag.clientY;
-    if (!drag.started && Math.hypot(deltaX, deltaY) < 4) {
+    if (!drag.started && Math.hypot(deltaX, deltaY) < DRAG_START_THRESHOLD_PX) {
       return;
     }
 
