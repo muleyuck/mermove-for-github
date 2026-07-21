@@ -46,8 +46,12 @@ function formatNumber(value: number): number {
 }
 
 const ZOOM_LIMITS: ScaleLimits = { min: 0.5, max: 8 };
-const WHEEL_ZOOM_FACTOR = 1.1;
+const WHEEL_ZOOM_FACTOR = 1.07;
 const DRAG_START_THRESHOLD_PX = 4;
+// Mermaid's default htmlLabels setting renders node/edge labels as HTML
+// (<span>/<p>) inside <foreignObject>, not as SVG <text>/<tspan>.
+const TEXT_SELECTOR = "text, tspan, foreignObject";
+const INTERACTIVE_SELECTOR = `a, button, input, textarea, select, [contenteditable='true'], [role='link'], ${TEXT_SELECTOR}`;
 
 export function attachPanZoom(
   viewport: PannableViewport,
@@ -91,12 +95,16 @@ export function attachPanZoom(
   function handlePointerDown(event: Event) {
     const pointerEvent = event as PointerEvent;
     const interactiveElement = (pointerEvent.target as Element | null)?.closest?.(
-      "a, button, input, textarea, select, [contenteditable='true'], [role='link']",
+      INTERACTIVE_SELECTOR,
     );
 
     if (pointerEvent.button !== 0 || interactiveElement) {
       return;
     }
+
+    // Without this, the browser's native mousedown-drag text selection runs
+    // alongside panning and selects whatever label the pointer crosses.
+    pointerEvent.preventDefault();
 
     drag = {
       pointerId: pointerEvent.pointerId,
@@ -108,9 +116,24 @@ export function attachPanZoom(
     viewport.setPointerCapture?.(pointerEvent.pointerId);
   }
 
+  function updateHoverCursor(pointerEvent: PointerEvent) {
+    const overText = (pointerEvent.target as Element | null)?.closest?.(TEXT_SELECTOR);
+    viewport.style.cursor = overText ? "text" : "grab";
+  }
+
   function handlePointerMove(event: Event) {
     const pointerEvent = event as PointerEvent;
-    if (!drag || pointerEvent.pointerId !== drag.pointerId) {
+    if (!drag) {
+      updateHoverCursor(pointerEvent);
+      return;
+    }
+
+    if (pointerEvent.pointerId !== drag.pointerId) {
+      return;
+    }
+
+    if (pointerEvent.buttons === 0) {
+      finishDrag(event);
       return;
     }
 
