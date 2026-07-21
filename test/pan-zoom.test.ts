@@ -9,10 +9,13 @@ import {
 
 class TestElement extends EventTarget implements PannableViewport, PannableTarget {
   style = { cursor: "grab", transform: "", transformOrigin: "" };
-  interactive = false;
+  interactiveTag: string | null = null;
 
-  closest(): Element | null {
-    return this.interactive ? (this as unknown as Element) : null;
+  closest(selector: string): Element | null {
+    return this.interactiveTag &&
+      selector.split(",").map((part) => part.trim()).includes(this.interactiveTag)
+      ? (this as unknown as Element)
+      : null;
   }
   setPointerCapture(): void {}
   releasePointerCapture(): void {}
@@ -63,7 +66,7 @@ test("Ctrl+wheel zooms around the pointer without scrolling the page", (t) => {
 
   viewport.dispatchEvent(event);
 
-  assert.equal(target.style.transform, "translate(-5px, -8px) scale(1.1)");
+  assert.equal(target.style.transform, "translate(-3.5px, -5.6px) scale(1.07)");
   assert.equal(event.defaultPrevented, true);
 });
 
@@ -101,7 +104,7 @@ test("zero-delta wheel leaves the diagram and page scrolling unchanged", (t) => 
 
 test("dragging starts outside interactive Mermaid nodes only", (t) => {
   const { viewport, target } = setup(t);
-  viewport.interactive = true;
+  viewport.interactiveTag = "button";
 
   viewport.dispatchEvent(
     createEvent("pointerdown", { button: 0, pointerId: 3, clientX: 15, clientY: 25 }),
@@ -111,6 +114,76 @@ test("dragging starts outside interactive Mermaid nodes only", (t) => {
   );
 
   assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
+});
+
+test("pointerdown on an HTML-rendered diagram label does not start panning", (t) => {
+  const { viewport, target } = setup(t);
+  viewport.interactiveTag = "foreignObject";
+
+  viewport.dispatchEvent(
+    createEvent("pointerdown", { button: 0, pointerId: 6, clientX: 15, clientY: 25 }),
+  );
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 6, clientX: 45, clientY: 55 }),
+  );
+
+  assert.equal(target.style.transform, "translate(0px, 0px) scale(1)");
+});
+
+test("hovering over an HTML-rendered diagram label shows a text-selection cursor", (t) => {
+  const { viewport } = setup(t);
+  viewport.interactiveTag = "foreignObject";
+
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 1, clientX: 10, clientY: 10, buttons: 0 }),
+  );
+
+  assert.equal(viewport.style.cursor, "text");
+});
+
+test("moving off diagram text restores the grab cursor", (t) => {
+  const { viewport } = setup(t);
+  viewport.interactiveTag = "text";
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 1, clientX: 10, clientY: 10, buttons: 0 }),
+  );
+  assert.equal(viewport.style.cursor, "text");
+
+  viewport.interactiveTag = null;
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 1, clientX: 20, clientY: 20, buttons: 0 }),
+  );
+
+  assert.equal(viewport.style.cursor, "grab");
+});
+
+test("starting a pan claims the pointerdown so the browser doesn't select text underneath", (t) => {
+  const { viewport } = setup(t);
+
+  const pointerDown = createEvent("pointerdown", {
+    button: 0,
+    pointerId: 8,
+    clientX: 20,
+    clientY: 30,
+  });
+  viewport.dispatchEvent(pointerDown);
+
+  assert.equal(pointerDown.defaultPrevented, true);
+});
+
+test("pointerdown on diagram text leaves the event unclaimed for the browser's native selection", (t) => {
+  const { viewport } = setup(t);
+  viewport.interactiveTag = "text";
+
+  const pointerDown = createEvent("pointerdown", {
+    button: 0,
+    pointerId: 8,
+    clientX: 20,
+    clientY: 30,
+  });
+  viewport.dispatchEvent(pointerDown);
+
+  assert.equal(pointerDown.defaultPrevented, false);
 });
 
 test("left-button drag pans the rendered diagram", (t) => {
@@ -158,6 +231,37 @@ test("a completed drag does not activate a Mermaid node", (t) => {
   viewport.dispatchEvent(click);
 
   assert.equal(activationCount, 0);
+});
+
+test("pointer released outside the viewport stops a stale drag instead of resuming panning", (t) => {
+  const { viewport, target } = setup(t);
+
+  viewport.dispatchEvent(
+    createEvent("pointerdown", {
+      button: 0,
+      pointerId: 5,
+      clientX: 20,
+      clientY: 30,
+      buttons: 1,
+    }),
+  );
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 5, clientX: 32, clientY: 47, buttons: 1 }),
+  );
+  assert.equal(target.style.transform, "translate(12px, 17px) scale(1)");
+
+  // Simulates the pointer leaving the frame, the button being released
+  // outside it (no pointerup delivered here), and the pointer re-entering.
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 5, clientX: 100, clientY: 100, buttons: 0 }),
+  );
+  assert.equal(target.style.transform, "translate(12px, 17px) scale(1)");
+  assert.equal(viewport.style.cursor, "grab");
+
+  viewport.dispatchEvent(
+    createEvent("pointermove", { pointerId: 5, clientX: 150, clientY: 150, buttons: 0 }),
+  );
+  assert.equal(target.style.transform, "translate(12px, 17px) scale(1)");
 });
 
 test("reset restores the initial transform", (t) => {
