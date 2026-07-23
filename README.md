@@ -1,3 +1,12 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/icons/logo-dark.svg">
+  <img width="512" src="/icons/logo-light.svg">
+</picture>
+
+[![unit-test](https://github.com/muleyuck/mermove-for-github/actions/workflows/unit-test.yml/badge.svg)](https://github.com/muleyuck/mermove-for-github/actions/workflows/unit-test.yml)
+![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)
+[![Release](https://img.shields.io/github/release/muleyuck/mermove-for-github.svg)](https://github.com/muleyuck/mermove-for-github/releases/latest)
+
 # Mermove for GitHub
 
 Mermove for GitHub is a Chrome extension for panning and zooming Mermaid diagrams rendered on GitHub.
