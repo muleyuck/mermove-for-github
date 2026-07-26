@@ -56,7 +56,7 @@ test("the compatibility workflow remains manually runnable when scheduling stops
     workflow,
     /if: github\.event\.repository\.visibility == 'public'/,
   );
-  assert.match(workflow, /run: npm run test:compatibility/);
+  assert.match(workflow, /run: pnpm test:compatibility/);
   assert.doesNotMatch(workflow, /GITHUB_MERMAID_FIXTURE_/);
 });
 
