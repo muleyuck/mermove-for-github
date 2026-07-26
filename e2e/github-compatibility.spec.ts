@@ -86,7 +86,7 @@ test("the extension controls GitHub's live Mermaid renderer", async ({
 
   await expect
     .poll(() => target.evaluate((element) => element.style.transform))
-    .toContain("scale(1.1)");
+    .toContain("scale(1.07)");
 
   const transformBeforePan = await target.evaluate(
     (element) => element.style.transform,
