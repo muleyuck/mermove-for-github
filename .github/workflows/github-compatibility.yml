@@ -4,23 +4,40 @@ on:
   workflow_call:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
-permissions:
-  contents: read
+permissions: {}
+defaults:
+  run:
+    shell: bash
 
 jobs:
   verify:
     if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version:
+          - 25
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
         with:
-          node-version: "25.1.0"
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:compatibility
+          version: 10.33.0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:compatibility
       - name: Upload browser diagnostics
         if: failure()
         uses: actions/upload-artifact@v7
