@@ -1,4 +1,4 @@
-import { chromium, expect, test as base, type BrowserContext, type Frame } from "@playwright/test";
+import { chromium, expect, test as base, type BrowserContext, type Frame, type Locator } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 
 const extensionPath = fileURLToPath(new URL("../dist/", import.meta.url));
@@ -50,6 +50,37 @@ async function findDiagramFrame(pageFrames: () => Frame[]): Promise<Frame> {
   return diagramFrame as Frame;
 }
 
+// GitHub's renderer replaces the SVG node once after the initial mount
+// (observed via renderer.ts's MutationObserver rebinding). Interacting
+// mid-swap sends events to a viewport whose controller has just been
+// destroyed, so wait for the bounding box to settle first.
+async function waitForStableBoundingBox(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  let previous: string | null = null;
+  let stable: { x: number; y: number; width: number; height: number } | null =
+    null;
+
+  await expect
+    .poll(
+      async () => {
+        const bounds = await locator.boundingBox();
+        const serialized = bounds ? JSON.stringify(bounds) : null;
+        const isStable = serialized !== null && serialized === previous;
+        previous = serialized;
+        if (isStable) {
+          stable = bounds;
+        }
+        return isStable;
+      },
+      { message: "expected the diagram bounding box to stabilize" },
+    )
+    .toBe(true);
+
+  assertBounds(stable);
+  return stable;
+}
+
 test("the extension controls GitHub's live Mermaid renderer", async ({
   context,
 }) => {
@@ -72,8 +103,7 @@ test("the extension controls GitHub's live Mermaid renderer", async ({
     element.scrollIntoView({ block: "center" }),
   );
 
-  const bounds = await diagram.boundingBox();
-  assertBounds(bounds);
+  const bounds = await waitForStableBoundingBox(diagram);
   const pointer = {
     x: bounds.x + Math.min(bounds.width / 2, 200),
     y: bounds.y + Math.min(bounds.height / 2, 150),
