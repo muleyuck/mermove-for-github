@@ -23,6 +23,12 @@ Dragging does not start from Mermaid nodes that are links. A click and a drag ar
 
 ## Install
 
+### Recommend
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/mermove-for-github/mbpjhkgdbmmjgjfnafnmahdhngpokofn)
+
+### Optional (Manual install from source)
+
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
 3. Run `npm ci && npm run build` to generate `dist/`.
@@ -31,4 +37,5 @@ Dragging does not start from Mermaid nodes that are links. A click and a drag ar
 
 ## Scope and Permissions
 
-The extension runs only in GitHub's dedicated Mermaid renderer at `viewscreen.githubusercontent.com/markdown/mermaid`. It does not run directly on `github.com` pages and does not request additional browser permissions.
+The extension runs only in GitHub's dedicated Mermaid renderer at `viewscreen.githubusercontent.com/markdown/mermaid`.  
+It does not run directly on `github.com` pages and does not request additional browser permissions.
