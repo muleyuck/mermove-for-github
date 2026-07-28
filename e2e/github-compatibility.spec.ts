@@ -16,6 +16,10 @@ const test = base.extend<{ context: BrowserContext }>({
       args: [
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
+        // Avoids renderer crashes on CI runners where /dev/shm is too
+        // small for Chromium's shared-memory allocations under real,
+        // JS-heavy page loads (github.com itself, not just the fixture).
+        "--disable-dev-shm-usage",
       ],
     });
 
