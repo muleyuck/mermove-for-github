@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/muleyuck/mermove-for-github/compare/mermove-for-github-v0.1.0...mermove-for-github-v0.1.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* wait for diagram bounding box to stabilize before pan/zoom in compatibility test ([1fadc71](https://github.com/muleyuck/mermove-for-github/commit/1fadc71f83317db976d1c160c07826a774b10f66))
+
 ## 0.1.0 (2026-07-23)
 
 
