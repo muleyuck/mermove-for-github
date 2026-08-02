@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.2.0](https://github.com/muleyuck/mermove-for-github/compare/mermove-for-github-v0.1.0...mermove-for-github-v0.2.0) (2026-08-02)
+
+
+### Features
+
+* add Chrome extension for pan and zoom on GitHub Mermaid diagrams ([0db3015](https://github.com/muleyuck/mermove-for-github/commit/0db301576fff960880063af921318c8c151fcda9))
+* add extension icons and wire them into manifest.json ([1773a04](https://github.com/muleyuck/mermove-for-github/commit/1773a0483e2547f7ea452687f4075d6ae1f68d05))
+* add release-please workflow for automated releases ([0910d3b](https://github.com/muleyuck/mermove-for-github/commit/0910d3b94a81cb92a6b82c6c148f5169f25358b6))
+* bootstrap TypeScript/esbuild toolchain ([f4459fa](https://github.com/muleyuck/mermove-for-github/commit/f4459fab1dac1c1efe676e0f16bac9e7662c935f))
+* enforce coverage thresholds on npm test ([4214fd7](https://github.com/muleyuck/mermove-for-github/commit/4214fd70094792c54c6901b28c3e745f4288470e))
+* migrate content-script.js to TypeScript ([101a526](https://github.com/muleyuck/mermove-for-github/commit/101a5268b5f7bd4c887c287715438b378c59d59a))
+* migrate pan-zoom.js to TypeScript ([4a6fa6b](https://github.com/muleyuck/mermove-for-github/commit/4a6fa6bcce6ebccbf3478f87b59a80e7f35dbafe))
+* wire esbuild build and point manifest at dist/ ([88c5515](https://github.com/muleyuck/mermove-for-github/commit/88c55157969bc27d263dfebbbacbd4f0ecb33c10))
+
+
+### Bug Fixes
+
+* adjust logo SVG dimensions ([a03b0f7](https://github.com/muleyuck/mermove-for-github/commit/a03b0f7d67a2374beedc6d14b859d376ea624bc5))
+* don't pan when dragging over diagram text/labels, and stop stale drags on pointer release outside the viewport ([41d9d8f](https://github.com/muleyuck/mermove-for-github/commit/41d9d8f3f37ca23c6c60213c505eb686faf8cab3))
+* scroll the diagram into view before dispatching pointer events in compatibility e2e test ([9ab26c8](https://github.com/muleyuck/mermove-for-github/commit/9ab26c8415054e341f89541df2e890c6c8e96a0a))
+
+
+### Reverts
+
+* drop coverage thresholds from npm test ([187dd75](https://github.com/muleyuck/mermove-for-github/commit/187dd75081ee7522cc8ab18fbc8aaa9bd049fbbb))
+
 ## 0.1.0 (2026-07-23)
 
 
