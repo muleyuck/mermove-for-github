@@ -1,0 +1,34 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "timezone": "Asia/Tokyo",
+  "schedule": ["on saturday"],
+  "reviewers": ["muleyuck"],
+  "prConcurrentLimit": 10,
+  "semanticCommits": "enabled",
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "dependencyDashboard": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["on saturday"]
+  },
+  "packageRules": [
+    { "matchManagers": ["github-actions"], "groupName": "github-actions dependencies" },
+    { "matchManagers": ["github-actions"], "matchUpdateTypes": ["patch", "minor", "digest"], "automerge": true },
+
+    { "matchManagers": ["npm"], "matchUpdateTypes": ["major"], "enabled": false },
+
+    { "matchManagers": ["npm"], "matchDepTypes": ["devDependencies"], "semanticCommitScope": "deps-dev" },
+    { "matchManagers": ["npm"], "matchDepTypes": ["devDependencies"], "matchUpdateTypes": ["patch", "minor"], "automerge": true },
+
+    { "matchManagers": ["mise", "npm"], "matchPackageNames": ["pnpm"], "groupName": "pnpm toolchain", "automerge": false },
+    { "matchManagers": ["mise", "npm"], "matchPackageNames": ["pnpm"], "matchUpdateTypes": ["major"], "enabled": false },
+
+    { "matchManagers": ["mise", "npm"], "matchPackageNames": ["node", "@types/node"], "groupName": "node toolchain", "automerge": false },
+    { "matchManagers": ["mise", "npm"], "matchPackageNames": ["node", "@types/node"], "matchUpdateTypes": ["major"], "enabled": false },
+
+    { "matchUpdateTypes": ["lockFileMaintenance"], "automerge": false, "minimumReleaseAge": null }
+  ]
+}
