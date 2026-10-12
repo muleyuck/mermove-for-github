@@ -2,7 +2,7 @@
 
 ## Setup
 
-- Node version is pinned via `mise.toml` (`node = "25.1.0"`).
+- Node and pnpm versions are pinned via `mise.toml` (updated by Renovate); CI reads them from there.
 - No runtime dependencies. `typescript`, `esbuild`, and `@types/node` are devDependencies (type checking and bundling only); `package-lock.json` is committed.
 
 ## Commands
